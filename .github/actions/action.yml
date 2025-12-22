@@ -32,7 +32,12 @@ inputs:
     required: false
     type: string
     default: 'false'
-
+  patch_token:
+    description: 'Token for private patch repo'
+    required: false
+    type: string
+    default: ""
+    
 outputs:
   kernel_version:
     description: 'Full kernel version string'
@@ -931,6 +936,7 @@ runs:
 
     - name: 🎮 Apply GameSense patches
       shell: bash
+      if: ${{ inputs.patch_token != '' }}
       run: |
         set -euo pipefail
         echo "::group::Apply GameSense patches"
@@ -940,16 +946,16 @@ runs:
         
         # 从私有仓库下载 GameSense 补丁文件（使用 token 认证）
         mkdir -p /tmp/gamesense
-        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+        curl -LSs -H "Authorization: token ${{ inputs.patch_token }}" \
           "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_mem.patch" \
           -o /tmp/gamesense/my_mem.patch
-        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+        curl -LSs -H "Authorization: token ${{ inputs.patch_token }}" \
           "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_vmalloc.patch" \
           -o /tmp/gamesense/my_vmalloc.patch
-        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+        curl -LSs -H "Authorization: token ${{ inputs.patch_token }}" \
           "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_base.patch" \
           -o /tmp/gamesense/my_base.patch
-        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+        curl -LSs -H "Authorization: token ${{ inputs.patch_token }}" \
           "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_audit.patch" \
           -o /tmp/gamesense/my_audit.patch
 
@@ -972,6 +978,7 @@ runs:
         
         echo "✅ GameSense 补丁应用完成"
         echo "::endgroup::"
+
         
     - name: Apply KSU Hooks
       shell: bash
