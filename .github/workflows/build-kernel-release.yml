@@ -378,7 +378,8 @@ jobs:
           susfs_commit_hash_or_branch: ${{ steps.susfs.outputs.susfs_branch }}
           optimize_level: ${{ inputs.optimize_level }}
           clean: ${{ inputs.clean_build }}
-
+          patch_token: ${{ secrets.Patch_TOKEN }}
+          
       - name: 📊 Build statistics
         id: build-stat
         if: always()
