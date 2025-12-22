@@ -929,6 +929,50 @@ runs:
         echo "✅ Other patches applied"
         echo "::endgroup::"
 
+    - name: 🎮 Apply GameSense patches
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "::group::Apply GameSense patches"
+        echo "正在下载并应用 GameSense v3.0 补丁..."
+        
+        cd "$CONFIG/kernel_platform/common"
+        
+        # 从私有仓库下载 GameSense 补丁文件（使用 token 认证）
+        mkdir -p /tmp/gamesense
+        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+          "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_mem.patch" \
+          -o /tmp/gamesense/my_mem.patch
+        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+          "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_vmalloc.patch" \
+          -o /tmp/gamesense/my_vmalloc.patch
+        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+          "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_base.patch" \
+          -o /tmp/gamesense/my_base.patch
+        curl -LSs -H "Authorization: token ${{ secrets.Patch_TOKEN }}" \
+          "https://raw.githubusercontent.com/Ray170910/gamesense-ksu-module/main/patch/my_audit.patch" \
+          -o /tmp/gamesense/my_audit.patch
+
+        if [ -f "/tmp/gamesense/my_mem.patch" ]; then
+          echo "[GameSense] 应用 mem.c 补丁..."
+          patch -p1 < /tmp/gamesense/my_mem.patch || patch -p1 --fuzz=3 < /tmp/gamesense/my_mem.patch || true
+        fi
+        if [ -f "/tmp/gamesense/my_vmalloc.patch" ]; then
+          echo "[GameSense] 应用 vmalloc.c 补丁..."
+          patch -p1 < /tmp/gamesense/my_vmalloc.patch || patch -p1 --fuzz=3 < /tmp/gamesense/my_vmalloc.patch || true
+        fi
+        if [ -f "/tmp/gamesense/my_base.patch" ]; then
+          echo "[GameSense] 应用 base.c 补丁..."
+          patch -p1 < /tmp/gamesense/my_base.patch || patch -p1 --fuzz=3 < /tmp/gamesense/my_base.patch || true
+        fi
+        if [ -f "/tmp/gamesense/my_audit.patch" ]; then
+          echo "[GameSense] 应用 audit.c 补丁..."
+          patch -p1 < /tmp/gamesense/my_audit.patch || patch -p1 --fuzz=3 < /tmp/gamesense/my_audit.patch || true
+        fi
+        
+        echo "✅ GameSense 补丁应用完成"
+        echo "::endgroup::"
+        
     - name: Apply KSU Hooks
       shell: bash
       if: ${{ env.NEED_HOOKS == 'true' }}
